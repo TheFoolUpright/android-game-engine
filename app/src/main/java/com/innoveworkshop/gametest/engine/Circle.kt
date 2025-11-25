@@ -6,6 +6,7 @@ import android.graphics.Paint
 class Circle(x: Float, y: Float, var radius: Float, color: Int) : GameObject(x, y), Caged {
     // Set up the paint.
     var paint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    var mass: Int = 1
 
     init {
         paint.color = color

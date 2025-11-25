@@ -11,6 +11,7 @@ class DroppingRectangle(
     color: Int
 ) : Rectangle(position, width, height, color) {
     var dropRate: Float = 0f
+    var mass = 1
 
     init {
         this.dropRate = dropRate

@@ -1,6 +1,7 @@
 package com.innoveworkshop.gametest
 
 import android.content.Context
+import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -11,6 +12,7 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import com.innoveworkshop.gametest.assets.DeviceRotation
 import com.innoveworkshop.gametest.assets.DroppingRectangle
 import com.innoveworkshop.gametest.engine.Circle
 import com.innoveworkshop.gametest.engine.GameObject
@@ -20,16 +22,16 @@ import com.innoveworkshop.gametest.engine.Vector
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
     protected var gameSurface: GameSurface? = null
-    protected var upButton: Button? = null
-    protected var downButton: Button? = null
-    protected var leftButton: Button? = null
-    protected var rightButton: Button? = null
+
+    public var deviceRotation: DeviceRotation = DeviceRotation()
+    public var rateMagnitude = 5f
 
     protected var game: Game? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
         // Initialize gyro.
         initializeGyro()
@@ -39,21 +41,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         game = Game()
         gameSurface!!.setRootGameObject(game)
 
-        setupControls()
-    }
-
-    private fun setupControls() {
-        upButton = findViewById<View>(R.id.up_button) as Button
-        upButton!!.setOnClickListener { game!!.circle!!.position.y -= 10f }
-
-        downButton = findViewById<View>(R.id.down_button) as Button
-        downButton!!.setOnClickListener { game!!.circle!!.position.y += 10f }
-
-        leftButton = findViewById<View>(R.id.left_button) as Button
-        leftButton!!.setOnClickListener { game!!.circle!!.position.x -= 10f }
-
-        rightButton = findViewById<View>(R.id.right_button) as Button
-        rightButton!!.setOnClickListener { game!!.circle!!.position.x += 10f }
     }
 
     fun initializeGyro() {
@@ -66,7 +53,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         if (data == null)
             return
 
-        Log.i("GyroData", "(${data.values[0]}, ${data.values[1]}, ${data.values[2]}, [${data.values[3]}])")
+        //Log.i("GyroDataQuaternion", "(${data.values[0]}, ${data.values[1]}, ${data.values[2]}, [${data.values[3]}])")
+        Log.i("GyroDataEuler", deviceRotation.toString())
+        deviceRotation.fromSensorEventQuaternion(data, rateMagnitude)
     }
 
     override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
@@ -104,11 +93,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         override fun onFixedUpdate() {
             super.onFixedUpdate()
 
-            if (!circle!!.isFloored && !circle!!.hitRightWall() && !circle!!.isDestroyed) {
-                circle!!.setPosition(circle!!.position.x + 1, circle!!.position.y + 1)
-            } else {
-                circle!!.destroy()
-            }
+            circle!!.setPosition(
+                circle!!.position.x + deviceRotation.roll,
+                circle!!.position.y - deviceRotation.pitch
+            )
         }
     }
 }
