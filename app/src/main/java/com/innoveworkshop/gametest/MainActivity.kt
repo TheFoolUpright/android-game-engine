@@ -1,7 +1,13 @@
 package com.innoveworkshop.gametest
 
+import android.content.Context
 import android.graphics.Color
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
@@ -12,7 +18,7 @@ import com.innoveworkshop.gametest.engine.GameSurface
 import com.innoveworkshop.gametest.engine.Rectangle
 import com.innoveworkshop.gametest.engine.Vector
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), SensorEventListener {
     protected var gameSurface: GameSurface? = null
     protected var upButton: Button? = null
     protected var downButton: Button? = null
@@ -24,6 +30,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // Initialize gyro.
+        initializeGyro()
+
 
         gameSurface = findViewById<View>(R.id.gameSurface) as GameSurface
         game = Game()
@@ -44,6 +54,22 @@ class MainActivity : AppCompatActivity() {
 
         rightButton = findViewById<View>(R.id.right_button) as Button
         rightButton!!.setOnClickListener { game!!.circle!!.position.x += 10f }
+    }
+
+    fun initializeGyro() {
+        val sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val sensor: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        sensorManager.registerListener(this, sensor, 100000)
+    }
+
+    override fun onSensorChanged(data: SensorEvent?) {
+        if (data == null)
+            return
+
+        Log.i("GyroData", "(${data.values[0]}, ${data.values[1]}, ${data.values[2]}, [${data.values[3]}])")
+    }
+
+    override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
     }
 
     inner class Game : GameObject() {
