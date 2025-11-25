@@ -75,28 +75,58 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             )
             surface.addGameObject(circle!!)
 
-            surface.addGameObject(
-                Rectangle(
-                    Vector((surface.width / 3).toFloat(), (surface.height / 3).toFloat()),
-                    200f, 100f, Color.GREEN
-                )
-            )
 
-            surface.addGameObject(
-                DroppingRectangle(
-                    Vector((surface.width / 3).toFloat(), (surface.height / 3).toFloat()),
-                    100f, 100f, 10f, Color.rgb(128, 14, 80)
-                )
-            )
+
         }
 
         override fun onFixedUpdate() {
             super.onFixedUpdate()
 
-            circle!!.setPosition(
-                circle!!.position.x + deviceRotation.roll,
-                circle!!.position.y - deviceRotation.pitch
-            )
+            val circle = circle ?: return
+
+            // Convert deviceRotation to a force
+            val forceX = deviceRotation.roll * 0.5f
+            val forceY = -deviceRotation.pitch * 0.5f
+
+            circle.applyForce(Vector(forceX, forceY))
+
+            // Update physics each frame
+            circle.updatePhysics()
+
+            // Clamp to boundaries
+            keepCircleInside(circle)
+        }
+
+        fun keepCircleInside(circle: Circle) {
+            val stickiness = 0.90f // Adding friction when touching the wall
+
+            // LEFT WALL
+            if(circle.position.x - circle.radius < 0) {
+                circle.position.x = circle.radius
+                circle.velocity.x *= 0f
+                circle.velocity.y *= stickiness
+            }
+
+            // RIGHT WALL
+            if(circle.position.x + circle.radius > gameSurface!!.width) {
+                circle.position.x = gameSurface!!.width - circle.radius
+                circle.velocity.x *= 0f
+                circle.velocity.y *= stickiness
+            }
+
+            // TOP WALL
+            if(circle.position.y - circle.radius < 0) {
+                circle.position.y = circle.radius
+                circle.velocity.y *= 0f
+                circle.velocity.x *= stickiness
+            }
+
+            // BOTTOM WALL
+            if(circle.position.y + circle.radius > gameSurface!!.height) {
+                circle.position.y = gameSurface!!.height - circle.radius
+                circle.velocity.y *= 0f
+                circle.velocity.x *= stickiness
+            }
         }
     }
 }
