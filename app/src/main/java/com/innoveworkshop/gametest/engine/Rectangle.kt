@@ -28,7 +28,7 @@ open class Rectangle(position: Vector?, var width: Float, var height: Float, col
     }
 
     override fun hitLeftWall(): Boolean {
-        return (position.x - width / 2) <= gameSurface!!.width
+        return (position.x - width / 2) <= 0
     }
 
     override fun hitRightWall(): Boolean {
